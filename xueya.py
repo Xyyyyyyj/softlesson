@@ -14,12 +14,21 @@ class BloodPressureMonitor:
     def __init__(self, root):
         self.root = root
         self.root.title("参数设置和日志界面")
-        self.root.geometry("800x600")
+        self.root.geometry("1000x700")
 
-        self.background_image = Image.open("221.jpg")  # 确保图片路径正确
+        # 加载背景图片
+        self.background_image = Image.open(r"E:\ruanjianjiagou\ooo.png")  # 确保图片路径正确
+
+        # 获取窗口尺寸
+        self.window_width = self.root.winfo_screenwidth()
+        self.window_height = self.root.winfo_screenheight()
+
+        # 调整图片大小以适应窗口
+        self.background_image = self.background_image.resize((self.window_width, self.window_height), Image.LANCZOS)
         self.background_photo = ImageTk.PhotoImage(self.background_image)
         self.background_label = tk.Label(self.root, image=self.background_photo)
         self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
 
         self.stop_event = threading.Event()
         self.log_queue = queue.Queue()
@@ -44,6 +53,7 @@ class BloodPressureMonitor:
         self.param_frame_left = ttk.LabelFrame(self.root, text="参数设置 (左)")
         self.param_frame_left.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
 
+       
         self.param_label6 = ttk.Label(self.param_frame_left, text="采样周期 (秒):")
         self.param_label6.grid(row=0, column=0, padx=10, pady=10, sticky="w")
         self.param_entry6 = ttk.Entry(self.param_frame_left)
@@ -61,6 +71,13 @@ class BloodPressureMonitor:
 
         self.param_frame_right = ttk.LabelFrame(self.root, text="参数设置 (右)")
         self.param_frame_right.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
+
+        param_bg_right_image = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
+        param_bg_right_image = param_bg_right_image.resize((self.param_frame_right.winfo_width(), self.param_frame_right.winfo_height()), Image.LANCZOS)
+        self.param_bg_right_photo = ImageTk.PhotoImage(param_bg_right_image)
+        param_bg_right_label = tk.Label(self.param_frame_right, image=self.param_bg_right_photo)
+        param_bg_right_label.place(x=0, y=0, relwidth=1, relheight=1)
+
 
         self.param_label2 = ttk.Label(self.param_frame_right, text="舒张压方差:")
         self.param_label2.grid(row=0, column=0, padx=10, pady=10, sticky="w")
@@ -88,31 +105,89 @@ class BloodPressureMonitor:
         self.log_text.config(yscrollcommand=scrollbar.set)
 
         # 创建开始和停止按钮
-        start_icon = Image.open("ooo.png")  # 确保图片路径正确
+        start_icon = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
         start_icon = start_icon.resize((30, 30), Image.LANCZOS)
         self.start_photo = ImageTk.PhotoImage(start_icon)
         self.start_button = ttk.Button(self.root, text="开始", command=self.start_logging)
         self.start_button.grid(row=2, column=0, padx=10, pady=10, sticky="e")
 
-        stop_icon = Image.open("ooo.png")  # 确保图片路径正确
+        stop_icon = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
         stop_icon = stop_icon.resize((30, 30), Image.LANCZOS)
         self.stop_photo = ImageTk.PhotoImage(stop_icon)
         self.stop_button = ttk.Button(self.root, text="停止", command=self.stop_logging, state=tk.DISABLED)
         self.stop_button.grid(row=2, column=1, padx=10, pady=10, sticky="w")
 
         # 创建清理日志按钮
-        clear_icon = Image.open("ooo.png")  # 确保图片路径正确
+        clear_icon = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
         clear_icon = clear_icon.resize((30, 30), Image.LANCZOS)
         self.clear_photo = ImageTk.PhotoImage(clear_icon)
         self.clear_button = ttk.Button(self.root, text="清理日志", command=self.clear_log)
         self.clear_button.grid(row=2, column=2, padx=10, pady=10, sticky="w")
 
         # 创建绘图按钮
-        plot_icon = Image.open("ooo.png")  # 确保图片路径正确
+        plot_icon = Image.open(r"E:/ruanjianjiagou\520.png")  # 确保图片路径正确
         plot_icon = plot_icon.resize((30, 30), Image.LANCZOS)
         self.plot_photo = ImageTk.PhotoImage(plot_icon)
         self.plot_button = ttk.Button(self.root, text="绘图", command=self.plot_data)
         self.plot_button.grid(row=2, column=3, padx=10, pady=10, sticky="w")
+
+        # 延迟设置背景图片
+        self.root.after(100, self.set_background_images)
+
+    def set_background_images(self):
+        # 设置参数设置板块 (左) 的背景图片
+        param_bg_left_image = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
+        param_bg_left_image = param_bg_left_image.resize((self.param_frame_left.winfo_width(), self.param_frame_left.winfo_height()), Image.LANCZOS)
+        self.param_bg_left_photo = ImageTk.PhotoImage(param_bg_left_image)
+        param_bg_left_label = tk.Label(self.param_frame_left, image=self.param_bg_left_photo)
+        param_bg_left_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # 设置参数设置板块 (右) 的背景图片
+        param_bg_right_image = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
+        param_bg_right_image = param_bg_right_image.resize((self.param_frame_right.winfo_width(), self.param_frame_right.winfo_height()), Image.LANCZOS)
+        self.param_bg_right_photo = ImageTk.PhotoImage(param_bg_right_image)
+        param_bg_right_label = tk.Label(self.param_frame_right, image=self.param_bg_right_photo)
+        param_bg_right_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # 设置日志板块的背景图片
+        log_bg_image = Image.open(r"E:\ruanjianjiagou\520.png")  # 确保图片路径正确
+        log_bg_image = log_bg_image.resize((self.log_frame.winfo_width(), self.log_frame.winfo_height()), Image.LANCZOS)
+        self.log_bg_photo = ImageTk.PhotoImage(log_bg_image)
+        log_bg_label = tk.Label(self.log_frame, image=self.log_bg_photo)
+        log_bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # 添加参数设置板块 (左) 的控件
+        self.param_label6 = ttk.Label(self.param_frame_left, text="采样周期 (秒):")
+        self.param_label6.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.param_entry6 = ttk.Entry(self.param_frame_left)
+        self.param_entry6.grid(row=0, column=1, padx=10, pady=10)
+
+        self.param_label7 = ttk.Label(self.param_frame_left, text="线程数量:")
+        self.param_label7.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.param_spinbox7 = ttk.Spinbox(self.param_frame_left, from_=1, to=10, increment=1, width=5)
+        self.param_spinbox7.grid(row=1, column=1, padx=10, pady=10)
+
+        self.param_label1 = ttk.Label(self.param_frame_left, text="舒张压均值:")
+        self.param_label1.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+        self.param_entry1 = ttk.Entry(self.param_frame_left, state=tk.DISABLED)
+        self.param_entry1.grid(row=2, column=1, padx=10, pady=10)
+
+        # 添加参数设置板块 (右) 的控件
+        self.param_label2 = ttk.Label(self.param_frame_right, text="舒张压方差:")
+        self.param_label2.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.param_entry2 = ttk.Entry(self.param_frame_right, state=tk.DISABLED)
+        self.param_entry2.grid(row=0, column=1, padx=10, pady=10)
+
+        self.param_label3 = ttk.Label(self.param_frame_right, text="收缩压均值:")
+        self.param_label3.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.param_entry3 = ttk.Entry(self.param_frame_right, state=tk.DISABLED)
+        self.param_entry3.grid(row=1, column=1, padx=10, pady=10)
+
+        self.param_label4 = ttk.Label(self.param_frame_right, text="收缩压方差:")
+        self.param_label4.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+        self.param_entry4 = ttk.Entry(self.param_frame_right, state=tk.DISABLED)
+        self.param_entry4.grid(row=2, column=1, padx=10, pady=10)
+
 
     def setup_layout(self):
         self.root.grid_rowconfigure(0, weight=2)  # 参数设置区域权重更大
@@ -121,9 +196,10 @@ class BloodPressureMonitor:
         self.root.grid_columnconfigure(1, weight=1)
 
         style = ttk.Style()
-        style.configure('TButton', foreground='blue')
-        style.configure('TLabel', foreground='black', font=('Arial', 10))
-        style.configure('TEntry', foreground='black', font=('Arial', 10))
+        style.configure('TButton', foreground='blue',font=('SimHei', 10, 'bold'))
+        style.configure('TLabel', foreground='black', font=('SimHei', 13, 'bold'))
+        style.configure('TEntry', foreground='black', font=('SimHei', 13, 'bold'))
+        style.configure('TSpinbox', foreground='black', font=('SimHei', 14, 'bold'))
 
     def generate_random_value(self, mean, variance):
         std_dev = math.sqrt(variance)
