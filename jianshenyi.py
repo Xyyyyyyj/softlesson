@@ -9,11 +9,12 @@ from concurrent.futures import ThreadPoolExecutor
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
+import tkinter.messagebox
 
 class BloodPressureMonitor:
     def __init__(self, root):
         self.root = root
-        self.root.title("智能健身衣模拟器")
+        self.root.title("Smart Fitness Wearable Simulator")
         self.root.geometry("800x600")
 
         self.background_image = Image.open("1.jpg")  # 确保图片路径正确
@@ -41,7 +42,7 @@ class BloodPressureMonitor:
 
     def create_widgets(self):
         # 创建参数设置板块
-        self.param_frame_left = ttk.LabelFrame(self.root, text="参数设置 (左)")
+        self.param_frame_left = ttk.LabelFrame(self.root, text="Parameter Settings (Left)")
         self.param_frame_left.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
 
         self.param_label6 = ttk.Label(self.param_frame_left, text="采样周期 (秒):")
@@ -59,7 +60,7 @@ class BloodPressureMonitor:
         self.param_entry1 = ttk.Entry(self.param_frame_left, state=tk.DISABLED)
         self.param_entry1.grid(row=2, column=1, padx=10, pady=10)
 
-        self.param_frame_right = ttk.LabelFrame(self.root, text="参数设置 (右)")
+        self.param_frame_right = ttk.LabelFrame(self.root, text="Parameter Settings (Right)")
         self.param_frame_right.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
 
         self.param_label2 = ttk.Label(self.param_frame_right, text="舒张压方差:")
@@ -87,13 +88,6 @@ class BloodPressureMonitor:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.log_text.config(yscrollcommand=scrollbar.set)
 
-        # 添加日志背景图片
-        log_background_image = Image.open("1.jpg")  # 确保图片路径正确
-        log_background_photo = ImageTk.PhotoImage(log_background_image)
-        self.log_background_label = tk.Label(self.log_frame, image=log_background_photo)
-        self.log_background_label.image = log_background_photo  # 保持对图片的引用，防止被垃圾回收
-        self.log_background_label.place(x=0, y=0, relwidth=1, relheight=1)
-
         # 创建开始和停止按钮
         start_icon = Image.open("ooo.png")  # 确保图片路径正确
         start_icon = start_icon.resize((30, 30), Image.LANCZOS)
@@ -111,7 +105,7 @@ class BloodPressureMonitor:
         clear_icon = Image.open("ooo.png")  # 确保图片路径正确
         clear_icon = clear_icon.resize((30, 30), Image.LANCZOS)
         self.clear_photo = ImageTk.PhotoImage(clear_icon)
-        self.clear_button = ttk.Button(self.root, text="清理日志", command=self.clear_log)
+        self.clear_button = ttk.Button(self.root, text="清除日志", command=self.clear_log)
         self.clear_button.grid(row=2, column=2, padx=10, pady=10, sticky="w")
 
         # 创建绘图按钮
@@ -138,25 +132,25 @@ class BloodPressureMonitor:
 
     def determine_blood_pressure_status(self, systolic, diastolic):
         if systolic < 120 and diastolic < 80:
-            return "正常血压"
+            return "血压正常"
         elif 120 <= systolic < 130 and diastolic < 80:
-            return "高血压前期"
+            return "高血压前期"#高血压前期
         elif (130 <= systolic < 140) or (80 <= diastolic < 90):
-            return "高血压 1级"
+            return "高血压 1级"#高血压 1级
         elif systolic >= 140 or diastolic >= 90:
-            return "高血压 2级"
+            return "高血压 2级"#高血压 2级
         elif systolic >= 180 or diastolic >= 120:
-            return "高血压危象"
+            return "高血压危象"#高血压危象
         else:
-            return "未知状态"
+            return "unknown"
 
     def determine_heart_rate_status(self, heart_rate):
         if 60 <= heart_rate <= 100:
-            return "正常心率"
+            return "Normal"
         elif heart_rate < 60:
-            return "心动过缓"
+            return "low"
         else:
-            return "心动过速"
+            return "high"
 
     def determine_temperature_status(self, temperature):
         if 36.1 <= temperature <= 37.2:
@@ -284,18 +278,22 @@ class BloodPressureMonitor:
                 calories_burned = random.uniform(0, 500)  # 卡路里消耗范围0-500
                 self.calories_burned.append(calories_burned)
 
-                log_message = (f"时间: {timestamp} - "
-                               f"舒张压: {diastolic_pressure:.2f}, 收缩压: {systolic_pressure:.2f}, "
-                               f"心率: {heart_rate}, 心率状态: {heart_rate_status}, "
-                               f"体温: {temperature}, 体温状态: {temperature_status}, "
-                               f"卡路里消耗: {calories_burned:.2f}, "
-                               f"血压状态: {status}\n")
+                log_message = (f"time: {timestamp} - "
+                               f"diastolic pressure: {diastolic_pressure:.2f}, systolic pressure: {systolic_pressure:.2f}, "
+                               f"heart rate: {heart_rate}, heart rate stat: {heart_rate_status}, "
+                               f"temperature: {temperature}, temperature status: {temperature_status}, "
+                               f"calories burned: {calories_burned:.2f}, "
+                               f"blood pressure status: {status}\n")
                 self.log_queue.put(log_message)
+
+                # 打印日志到终端
+                print(log_message)
 
                 time.sleep(sampling_period)
             except ValueError as e:
                 error_message = f"输入错误: {e}\n"
                 self.log_queue.put(error_message)
+                print(error_message)  # 打印错误信息到终端
                 break
 
     def process_queue(self):
@@ -349,8 +347,8 @@ class BloodPressureMonitor:
             df['收缩压均值'] = round(systolic_mean, 1)
             df['收缩压方差'] = round(systolic_variance, 1)
 
-        df.to_csv("blood_pressure_data.csv", index=False, encoding='utf-8-sig')
-        print("数据已保存到 blood_pressure_data.csv")
+        df.to_csv("Intelligent_fitness_clothing.csv", index=False, encoding='utf-8-sig')  # 修改文件名
+        print("The data has been saved to Intelligent_fitness_clothing.csv")
 
     def plot_data(self):
         plt.figure(figsize=(10, 6))
@@ -367,7 +365,7 @@ class BloodPressureMonitor:
             else:
                 colors.append('blue')  # 正常血压
         plt.scatter(self.diastolic_pressures, self.systolic_pressures, c=colors, label='生成的数据点')
-        
+    
         # 绘制 y = 2/3x 的基准线
         x = range(0, 200)
         y = [2/3 * xi for xi in x]
@@ -403,7 +401,45 @@ class BloodPressureMonitor:
         plt.grid(True)
         plt.show()
 
+class LoginWindow:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("登录")
+        self.root.geometry("300x200")
+
+        # 添加背景图片
+        self.background_image = Image.open("1.jpg")  # 确保图片路径正确
+        self.background_photo = ImageTk.PhotoImage(self.background_image)
+        self.background_label = tk.Label(self.root, image=self.background_photo)
+        self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        self.label_username = ttk.Label(self.root, text="用户名:")
+        self.label_username.pack(pady=10)
+        self.entry_username = ttk.Entry(self.root)
+        self.entry_username.pack(pady=5)
+
+        self.label_password = ttk.Label(self.root, text="密码:")
+        self.label_password.pack(pady=10)
+        self.entry_password = ttk.Entry(self.root, show="*")
+        self.entry_password.pack(pady=5)
+
+        self.login_button = ttk.Button(self.root, text="登录", command=self.login)
+        self.login_button.pack(pady=20)
+
+    def login(self):
+        username = self.entry_username.get()
+        password = self.entry_password.get()
+
+        # 简单的验证逻辑
+        if username == "111" and password == "222":
+            self.root.destroy()
+            main_root = tk.Tk()
+            app = BloodPressureMonitor(main_root)
+            main_root.mainloop()
+        else:
+            tkinter.messagebox.showerror("错误", "用户名或密码错误")
+
 if __name__ == "__main__":
     root = tk.Tk()
-    app = BloodPressureMonitor(root)
+    login_app = LoginWindow(root)
     root.mainloop()
